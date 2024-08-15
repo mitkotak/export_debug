@@ -49,8 +49,8 @@ class Model(nn.Module):
         if self.works_flag:
             return shortcut_aggregated
         
-        else:
-            shortcut = self.linear(shortcut_aggregated)
+
+        shortcut = self.linear(shortcut_aggregated)
         return shortcut
 
 # Example usage
