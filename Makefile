@@ -14,9 +14,9 @@ profile:
 works:
 	./build/inference ${PWD}/export/scatter_works/model.so
 
-fail:
-	./build/inference ${PWD}/export/scatter_linear_fail/model.so
+error:
+	./build/inference ${PWD}/export/scatter_linear_error/model.so
 
 
-.PHONY: run works fail build clean
+.PHONY: run works error build clean
 

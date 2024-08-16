@@ -55,11 +55,11 @@ class Model(nn.Module):
 
 # Example usage
 input_dim = 1
-num_nodes = 50
+num_nodes = 5
 
 # Create random input data
 node_features = torch.randn(num_nodes, input_dim).to(device=device)
-receivers = torch.randint(0, 32, (num_nodes,)).to(device=device)
+receivers = torch.randint(0, 3, (num_nodes,)).to(device=device)
 
 # Instantiate the module
 model = Model(input_dim, num_nodes, works_flag=False).to(device=device)
@@ -68,8 +68,7 @@ model = Model(input_dim, num_nodes, works_flag=False).to(device=device)
 output = model(node_features, receivers)
 
 print(f"Input node_features: {node_features.shape} {node_features.dtype}")
-print(f"Input receivers: {receivers.shape} {receivers.dtype}")
-print(f"Output shape: {output.shape} {output.dtype}")
+print(f"Input receivers: {receivers} {receivers.shape} {receivers.dtype}")
 
 post_script = "scatter_works" if model.works_flag else "scatter_linear_fail"
 
@@ -79,7 +78,9 @@ so_path = torch._export.aot_compile(
         options={"aot_inductor.output_path": os.path.join(os.getcwd(), f"export/{post_script}/model.so"),
     })
 
-model_export = torch._export.aot_load(os.path.join(os.getcwd(), f"export/scatter_works/model.so"), device=device)
+runner = torch._C._aoti.AOTIModelContainerRunnerCuda(os.path.join(os.getcwd(), f"export/{post_script}/model.so"), 1, device)
+outputs_export = runner.run([node_features, receivers])
 
-model_export(node_features, receivers)
+print(f"Output: {outputs_export[0].shape} {outputs_export[0].dtype}")
+
 

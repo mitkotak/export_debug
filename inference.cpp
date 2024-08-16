@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
     torch::inductor::AOTIModelContainerRunnerCuda *runner;
     runner = new torch::inductor::AOTIModelContainerRunnerCuda(model_path, 1);
     std::vector<torch::Tensor> inputs = {
-        torch::randn({50, 160}, torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCUDA)),
-        torch::randint(0, 50, {50,}, torch::TensorOptions().dtype(torch::kInt64).device(torch::kCUDA)),
+        torch::randn({5, 1}, torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCUDA)),
+        torch::tensor({2, 1, 0, 0, 0, 0}, torch::TensorOptions().dtype(torch::kInt64).device(torch::kCUDA)),
     };
     std::vector<torch::Tensor> outputs = runner->run(inputs);
     std::cout << "call successfull" << std::endl;
