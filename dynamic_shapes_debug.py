@@ -45,17 +45,26 @@ class Scatter(torch.nn.Module):
     def __init__(self):
         super().__init__()
         
-    def forward(self,
-                src,
-                index,
-                pos):
-
-        return scatter(
+    def forward(self, src, index, pos):
+        # Make src require gradients
+        src.requires_grad_(True)
+        
+        # Perform the scatter operation
+        result = scatter(
             src=src,
             index=index,
             dim=0,
             dim_size=pos.shape[0]
         )
+
+        # Compute gradients of result with respect to src
+        grads = torch.autograd.grad(
+            outputs=result.sum(),
+            inputs=src,
+        )[0]
+        
+        return result
+
 src = torch.randn(1796, 8, 4)
 pos = torch.randn(64, 3)
 index = torch.Tensor([ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -159,8 +168,8 @@ index = torch.Tensor([ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
         62, 62, 62, 62, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
         63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63]).to(torch.int64)
 
-neighbors = torch.export.Dim("neighbors", min=1, max=torch.inf)
-nodes = torch.export.Dim("nodes", min=1, max=torch.inf)
+neighbors = torch.export.Dim("neighbors", min=2, max=torch.inf)
+nodes = torch.export.Dim("nodes", min=2, max=torch.inf)
 
 scatter_model = Scatter()
 scatter_model = make_fx(scatter_model)(src, index, pos)
